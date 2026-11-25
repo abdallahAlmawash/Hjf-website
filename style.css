@@ -335,3 +335,9 @@ section.s:not(.green),section.s.alt{background:transparent}
 .flogo img:first-child{height:70px;width:auto}
 .flogo img:last-child{height:26px;width:auto}
 @media (max-width:760px){.brand .mk{height:66px}.brand .wm{height:24px}}
+/* footer logo back to original proportions; header mark +15% */
+.flogo{gap:10px}
+.flogo img:first-child{height:74px}
+.flogo img:last-child{height:19px}
+.brand .mk{height:106px}
+@media (max-width:760px){.brand .mk{height:76px}}
