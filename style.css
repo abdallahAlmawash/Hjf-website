@@ -257,3 +257,8 @@ section.s.green .eyebrow{color:var(--copper-soft)}
 .dev h3{color:#fff;font-size:clamp(22px,2.6vw,28px);margin-bottom:6px}
 .dev p{margin:0;font-size:17px;color:#E6EFEA;max-width:70ch}
 @media (max-width:760px){.dev{grid-template-columns:1fr;padding:24px 20px}}
+.svc{grid-template-columns:repeat(6,1fr)}
+.svc article{grid-column:span 2}
+.svc article:nth-child(4),.svc article:nth-child(5){grid-column:span 3}
+@media (max-width:960px){.svc{grid-template-columns:1fr 1fr}.svc article,.svc article:nth-child(4),.svc article:nth-child(5){grid-column:auto}}
+@media (max-width:760px){.svc{grid-template-columns:1fr}}
