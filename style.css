@@ -374,3 +374,9 @@ html{scroll-padding-top:130px}
   .amotion .c{animation:none}.amotion .c4{opacity:1}.amotion .p{animation:none}.amotion .p4{opacity:1}
 }
 @media (max-width:900px){.aimg.amotion{aspect-ratio:4/5;max-width:340px;margin-inline:auto 22px}}
+/* footer social */
+footer li.soc a{display:inline-flex;align-items:center;gap:8px;direction:ltr}
+footer li.soc svg{width:18px;height:18px;color:var(--copper-soft);flex:none}
+footer li.soc a:hover svg{color:#fff}
+/* about motion canvas */
+.aimg.amotion canvas{position:relative;display:block;width:100%;height:100%;border-radius:4px}
