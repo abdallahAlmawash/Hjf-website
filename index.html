@@ -13,7 +13,7 @@
 <link rel="icon" href="img/logo-copper.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"RealEstateAgent","name":"شركة هجف العقارية","alternateName":"HJF Real Estate",
  "telephone":["+966570705377","+966570707301"],"email":"info@h-j-f.com","url":"https://h-j-f.com",
@@ -54,7 +54,45 @@
 
 <section class="s" id="about"><div class="wrap">
   <div class="about3">
-    <figure class="aimg rv"><img src="img/facade.jpg" alt="واجهة مبنى سكني حديث بإضاءة ليلية"></figure>
+    <figure class="aimg amotion rv" aria-label="رسم متحرك يعرّف بهجف العقارية: شركة عقارية سعودية من الرياض">
+      <svg viewBox="0 0 400 500" role="img" aria-hidden="true">
+        <defs>
+          <linearGradient id="cu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C98A58"/><stop offset=".55" stop-color="#F3CFA2"/><stop offset="1" stop-color="#C5824F"/></linearGradient>
+          <radialGradient id="glow" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#6B1C2A"/><stop offset="1" stop-color="#3F0C15"/></radialGradient>
+        </defs>
+        <rect width="400" height="500" fill="url(#glow)"/>
+        <g class="grid" stroke="#E5C3A0" stroke-opacity=".07">
+          <path d="M0 100H400M0 200H400M0 300H400M100 0V500M200 0V500M300 0V500"/>
+        </g>
+        <!-- plot / land -->
+        <path class="d d1" d="M40 380H360" stroke="url(#cu)" stroke-width="2"/>
+        <path class="d d1" d="M70 380l20-14h220l20 14" stroke="url(#cu)" stroke-width="1.4" fill="none"/>
+        <!-- buildings -->
+        <g fill="none" stroke="url(#cu)" stroke-width="1.8" stroke-linejoin="round">
+          <path class="d d2" d="M95 366V250h60v116"/>
+          <path class="d d2" d="M108 270h12M130 270h12M108 292h12M130 292h12M108 314h12M130 314h12M108 336h12M130 336h12"/>
+          <path class="d d3" d="M170 366V150l40-28 40 28v216"/>
+          <path class="d d3" d="M185 175h14M221 175h14M185 205h14M221 205h14M185 235h14M221 235h14M185 265h14M221 265h14M185 295h14M221 295h14M198 366v-40h24v40"/>
+          <path class="d d4" d="M265 366V215h50v151"/>
+          <path class="d d4" d="M277 235h10M295 235h10M277 260h10M295 260h10M277 285h10M295 285h10M277 310h10M295 310h10M277 335h10M295 335h10"/>
+        </g>
+        <!-- crane -->
+        <g class="crane" fill="none" stroke="#E5C3A0" stroke-opacity=".55" stroke-width="1.3">
+          <path d="M330 366V110M318 110h70M330 110l-24 0M340 110v40"/>
+          <path d="M330 130l10-20M330 150l10-20M330 170l10-20M330 190l10-20"/>
+        </g>
+        <!-- mark -->
+        <image class="mk" href="img/mark-metal.png" x="176" y="52" width="48" height="54"/>
+        <!-- stage captions -->
+        <g class="cap" font-family="Noto Kufi Arabic, IBM Plex Sans Arabic, Tahoma, sans-serif" font-size="23" font-weight="700" fill="url(#cu)" text-anchor="middle">
+          <text class="c c1" x="200" y="440">شركة عقارية سعودية</text>
+          <text class="c c2" x="200" y="440">من قلب الرياض</text>
+          <text class="c c3" x="200" y="440">نطوّر، نسوّق، وندير</text>
+          <text class="c c4" x="200" y="440">عقار بثقة، وقيمةٌ تُدار</text>
+        </g>
+        <g class="dots" fill="#E5C3A0"><circle class="p p1" cx="170" cy="470" r="3.5"/><circle class="p p2" cx="190" cy="470" r="3.5"/><circle class="p p3" cx="210" cy="470" r="3.5"/><circle class="p p4" cx="230" cy="470" r="3.5"/></g>
+      </svg>
+    </figure>
     <div class="atext">
       <div class="eyebrow c rv">من نحن</div>
       <h2 class="big rv">نعرف إن العقار<br>مو مجرد صفقة</h2>
@@ -177,6 +215,6 @@
   <div class="copy">© <span id="yr">2026</span> شركة هجف العقارية. جميع الحقوق محفوظة · الرقم الوطني الموحد <span class="ltr">7049524163</span></div>
 </footer>
 
-<script src="site.js?v=5"></script>
+<script src="site.js?v=6"></script>
 </body>
 </html>

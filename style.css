@@ -348,3 +348,29 @@ section.s:not(.green),section.s.alt{background:transparent}
 .top .wrap{padding-block:8px}
 @media (max-width:760px){.home .hero2 .wrap{padding-top:130px}}
 html{scroll-padding-top:130px}
+
+/* ===== About: motion graphic (how we work) ===== */
+.amotion{background:var(--burgundy-deep);border-radius:4px}
+.amotion svg{position:relative;display:block;width:100%;height:100%;border-radius:4px}
+.amotion .d{stroke-dasharray:900;stroke-dashoffset:900;animation:draw 12s ease-in-out infinite}
+.amotion .d1{animation-name:draw1}.amotion .d2{animation-name:draw2}.amotion .d3{animation-name:draw3}.amotion .d4{animation-name:draw4}
+@keyframes draw1{0%{stroke-dashoffset:900}12%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:900}}
+@keyframes draw2{0%,18%{stroke-dashoffset:900}38%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:900}}
+@keyframes draw3{0%,30%{stroke-dashoffset:900}55%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:900}}
+@keyframes draw4{0%,45%{stroke-dashoffset:900}68%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:900}}
+.amotion .crane{transform-origin:330px 366px;animation:crane 12s ease-in-out infinite}
+@keyframes crane{0%,10%{opacity:0;transform:translateY(20px)}20%,70%{opacity:1;transform:none}80%,100%{opacity:0}}
+.amotion .mk{opacity:0;transform-origin:200px 79px;animation:mk 12s ease-in-out infinite}
+@keyframes mk{0%,72%{opacity:0;transform:scale(.6)}80%,92%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.amotion .c{opacity:0;animation:cap 12s infinite}
+.amotion .c2{animation-delay:3s}.amotion .c3{animation-delay:6s}.amotion .c4{animation-delay:9s}
+@keyframes cap{0%{opacity:0;transform:translateY(8px)}4%,22%{opacity:1;transform:none}26%,100%{opacity:0}}
+.amotion .p{opacity:.25;animation:dot 12s infinite}
+.amotion .p2{animation-delay:3s}.amotion .p3{animation-delay:6s}.amotion .p4{animation-delay:9s}
+@keyframes dot{0%{opacity:.25}2%,23%{opacity:1}25%,100%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){
+  .amotion .d{animation:none;stroke-dashoffset:0}.amotion .crane{animation:none}
+  .amotion .mk{animation:none;opacity:1;transform:none}
+  .amotion .c{animation:none}.amotion .c4{opacity:1}.amotion .p{animation:none}.amotion .p4{opacity:1}
+}
+@media (max-width:900px){.aimg.amotion{aspect-ratio:4/5;max-width:340px;margin-inline:auto 22px}}
