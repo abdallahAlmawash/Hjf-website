@@ -328,3 +328,10 @@ body{background-image:url(img/texture-beige.jpg);background-size:1070px auto;bac
 section.s:not(.green),section.s.alt{background:transparent}
 .doc .box,.values li,.cc,.steps li,.reginfo,.lic figure,.crcard,.hours,.proj{background:rgba(250,244,234,.55)}
 .lic button,.crcard button{background:rgba(200,180,150,.25)}
+/* metallic header logo, bigger mark; footer wordmark */
+.brand .mk{height:92px}
+.brand .wm{height:32px}
+.flogo{display:flex;align-items:center;gap:14px}
+.flogo img:first-child{height:70px;width:auto}
+.flogo img:last-child{height:26px;width:auto}
+@media (max-width:760px){.brand .mk{height:66px}.brand .wm{height:24px}}
