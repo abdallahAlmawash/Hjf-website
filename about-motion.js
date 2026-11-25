@@ -1,6 +1,7 @@
 /* HJF "who we are" motion.
-   A real (invented) tower on King Fahd Road is assembled block by block as a
-   technical wireframe, then turns into a real street scene and holds there.
+   An invented mashrabiya tower on King Salman Road is assembled block by block
+   as a technical wireframe, turns real, and hands over to 6 s of real footage
+   (media/about-real.mp4) framed on the same shot.
    Canvas 2D + a small perspective projector, no libraries. One rAF clock,
    paused off-screen; reduced-motion users get the finished still. */
 {
@@ -10,9 +11,25 @@
     cv.setAttribute("aria-hidden", "true");
     cv.dir = "ltr"; cv.style.direction = "ltr";
     host.appendChild(cv);
+    const vid = document.createElement("video");
+    vid.muted = true; vid.playsInline = true; vid.preload = "auto"; vid.setAttribute("aria-hidden", "true");
+    vid.setAttribute("muted", ""); vid.setAttribute("playsinline", "");
+    vid.poster = "media/about-real.jpg"; vid.src = "media/about-real.mp4";
+    vid.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;opacity:0;pointer-events:none";
+    host.appendChild(vid);
+    const vSync = t => {               // drive the footage from the motion clock
+      const op = seg(t, V0, V0 + VF) * (1 - seg(t, T - .35, T));
+      vid.style.opacity = op.toFixed(3);
+      if (t >= V0 && t < T - .35) {
+        const want = Math.min(t - V0, (vid.duration || 6) - .05);
+        if (Math.abs(vid.currentTime - want) > .3) vid.currentTime = want;
+        if (vid.paused && t - V0 < (vid.duration || 6)) vid.play().catch(() => {});
+      } else if (!vid.paused) vid.pause();
+    };
     const g0 = cv.getContext("2d"); g0.direction = "ltr"; let g = g0;
     const cache = document.createElement("canvas"); let cacheOK = false;
     const T = 16; // loop seconds
+    const V0 = 9.55, VF = .6; // real footage starts here, crossfades in over VF s
     const HOLD = 9.7; // the real scene holds still (camera-wise) from here
 
     /* ---------- tiny math ---------- */
@@ -53,23 +70,160 @@
         put(x, y, z, wall && !roof ? mat(x, y, z) : RF);
       }
     };
-    // podium: double-height glass retail base, limestone above
-    shell(-14, 12, 0, 6, -8, 8, (x, y) => (y < 4 ? ((x + 14) % 4 === 0 ? ST : GD) : (y === 4 && (x + 14) % 4 !== 0 ? GD : ST)));
-    for (let x = -7; x < 5; x++) for (let z = -11; z < -8; z++) put(x, 4, z, MT);           // entrance canopy
-    for (const x of [-7, 4]) for (let y = 0; y < 4; y++) put(x, y, -10, MT);                // canopy columns
-    // tower: chamfered, glass with spandrel bands, limestone fins, open crown
-    const TX0 = -11, TX1 = 1, TZ0 = -6, TZ1 = 4, TY0 = 6, TY1 = 52;
-    shell(TX0, TX1, TY0, TY1, TZ0, TZ1, (x, y) => ((y - TY0) % 2 === 1 ? SP : GL), { chamfer: 1, slab: 12 });
-    for (let y = TY0; y < TY1 + 6; y++) {
-      for (let x = TX0 + 1; x < TX1 - 1; x++) if ((x - TX0) % 3 === 1) { put(x, y, TZ0 - 1, SL); put(x, y, TZ1, SL); }
-      for (let z = TZ0 + 1; z < TZ1 - 1; z++) if ((z - TZ0) % 3 === 1) { put(TX0 - 1, y, z, SL); put(TX1, y, z, SL); }
+    const DES = window.__hjfDesign || "I";
+    const BZ = 9, GT = 10, SA = 11, WD = 12;
+    // height-field helper: fills columns up to H(x,z), keeping only exposed cells
+    const field = (x0, x1, z0, z1, H, mat) => {
+      for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++) { const h = H(x, z); for (let y = 0; y < h; y++) {
+        const exp = y === h - 1 || H(x + 1, z) <= y || H(x - 1, z) <= y || H(x, z + 1) <= y || H(x, z - 1) <= y;
+        if (exp) put(x, y, z, y === h - 1 && H(x + 1, z) >= h && H(x - 1, z) >= h && H(x, z + 1) >= h && H(x, z - 1) >= h ? RF : (y === h - 1 && mat(x, y, z) !== RF ? RF : mat(x, y, z))); } }
+    };
+    const inR = (x, z, a, b, c, d) => x >= a && x < b && z >= c && z < d;
+    let TX0, TX1, TZ0, TZ1, TY0, TY1, FP, SH;
+    if (DES === "A") {            // Salmani: Najdi-rooted, solid sand stone, slit windows, shurfat parapets, wooden rawshan
+      const matA = (x, y, z) => { const c = ((z === -8 || z === 5) ? x : z) + 40;
+        if (y < 4) return (c % 5 === 0) ? SA : GD;
+        if (y === 22 || y === 23) return ((c + y) % 2 === 0) ? SL : SA;          // Najdi frieze
+        if (y === 24) return (c % 2 === 0) ? GD : SA;                             // row of small openings
+        return (c % 4 === 1 && y % 2 === 0) || (c % 4 === 2 && y % 2 === 0 && y > 6) ? GD : SA; };
+      shell(-14, 10, 0, 26, -8, 6, matA, { slab: 10 });
+      shell(-10, 4, 26, 36, -5, 3, matA);
+      shell(10, 18, 0, 12, -6, 4, matA);
+      const shurfa = (x0, x1, z0, z1, y) => { for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++) {
+        if (!(x === x0 || x === x1 - 1 || z === z0 || z === z1 - 1)) continue; const c = (x + z + 80);
+        if (c % 2 === 0) put(x, y, z, SA); if (c % 4 === 0) { put(x, y + 1, z, SA); } } };
+      shurfa(-14, 10, -8, 6, 26); shurfa(-10, 4, -5, 3, 36); shurfa(10, 18, -6, 4, 12);
+      for (let y = 0; y < 9; y++) { put(-5, y, -9, SL); put(2, y, -9, SL); put(-5, y, -10, SL); put(2, y, -10, SL); }   // portal
+      for (let x = -5; x <= 2; x++) { put(x, 9, -9, SL); put(x, 9, -10, SL); put(x, 10, -9, SL); }
+      for (let y = 10; y < 20; y++) for (let x = 4; x < 9; x++) put(x, y, -9, ((x + y) % 2 === 0) ? WD : (y % 3 === 0 ? WD : GD)); // rawshan
+      for (let y = 10; y < 20; y++) { put(3, y, -9, SA); put(9, y, -9, SA); }
+      TX0 = -14; TX1 = 10; TZ0 = -8; TZ1 = 6; TY0 = 0; TY1 = 32;
+      FP = [[-14, 10, -8, 6, 26], [-10, 4, -5, 3, 36], [10, 18, -6, 4, 12]];
+      SH = [[-14, 10, -8, 6, 26], [-10, 4, -5, 3, 38], [10, 18, -6, 4, 13]];
+    } else if (DES === "B") {     // Modern glass tower: tiered, tinted curtain wall, sloped crown (financial-district style)
+      const H = (x, z) => { let h = 0;
+        if (inR(x, z, -14, 12, -8, 8)) h = 4;
+        if (inR(x, z, -11, 3, -6, 5)) h = 24;
+        if (inR(x, z, -10, 2, -5, 4)) h = 42;
+        if (inR(x, z, -9, 1, -5, 3)) h = 56 + Math.floor((x + 9) * 1.1);
+        return h; };
+      field(-15, 13, -9, 9, H, (x, y, z) => (y < 4 ? (((x + 40) % 4 === 0) ? SL : GD) : (y % 6 === 5 ? SP : GT)));
+      for (let x = -6; x < 2; x++) for (let z = -11; z < -8; z++) put(x, 4, z, SL);    // canopy blade
+      TX0 = -11; TX1 = 3; TZ0 = -6; TZ1 = 5; TY0 = 4; TY1 = 60;
+      FP = [[-14, 12, -8, 8, 4], [-11, 3, -6, 5, 24], [-9, 1, -5, 3, 66]];
+      SH = [[-14, 12, -8, 8, 4], [-11, 3, -6, 5, 24], [-10, 2, -5, 4, 42], [-9, 1, -5, 3, 64]];
+    } else if (DES === "C") {     // Contemporary stacked volumes: shifted boxes, cantilevers, roof terraces, timber fins
+      const white = (x, y, z) => { const c = ((z === -7 || z === 4 || z === -9 || z === 2 || z === -6 || z === 5 || z === -8 || z === 1) ? x : z) + 40;
+        return (y % 2 === 0 && c % 6 !== 0) ? GD : SL; };
+      shell(-12, 6, 0, 10, -7, 5, (x, y, z) => (y < 4 ? (((x + 40) % 5 === 0) ? SL : GD) : white(x, y, z)), { slab: 10 });
+      shell(-8, 10, 10, 20, -9, 3, (x, y) => (y % 2 === 1 ? SP : GT));
+      for (let y = 10; y < 20; y++) for (let x = -8; x < 10; x++) if ((x + 40) % 3 === 0) put(x, y, -10, WD);
+      shell(-14, 2, 20, 30, -6, 6, white);
+      shell(-6, 8, 30, 40, -8, 2, (x, y) => (y % 2 === 1 ? SP : GT));
+      for (let y = 30; y < 40; y++) for (let x = -6; x < 8; x++) if ((x + 40) % 2 === 0) put(x, y, -9, BZ);
+      shell(-2, 4, 40, 43, -5, -1, () => SL);
+      TX0 = -14; TX1 = 10; TZ0 = -9; TZ1 = 6; TY0 = 0; TY1 = 37;
+      FP = [[-12, 6, -7, 5, 10], [-8, 10, -9, 3, 20], [-14, 2, -6, 6, 30], [-6, 8, -8, 2, 40]];
+      SH = [[-12, 6, -7, 5, 10], [-8, 10, -9, 3, 20], [-14, 2, -6, 6, 30], [-6, 8, -8, 2, 40]];
+    } else if (DES === "D") {                      // Mashrabiya: glass tower wrapped in a bronze geometric screen
+      shell(-11, 3, 0, 56, -7, 4, (x, y) => (y < 4 ? (((x + 40) % 4 === 0) ? SL : GD) : (y % 2 === 1 ? SP : GT)), { slab: 14 });
+      const lat = (u, y) => ((u + y) % 6 === 0) || ((u - y + 600) % 6 === 0) || (y % 14 === 4);
+      for (let y = 4; y < 60; y++) {
+        for (let x = -11; x < 3; x++) { if (lat(x + 40, y)) { put(x, y, -8, BZ); put(x, y, 4, BZ); } }
+        for (let z = -7; z < 4; z++) { if (lat(z + 40, y)) { put(-12, y, z, BZ); put(3, y, z, BZ); } }
+        for (const [x, z] of [[-12, -8], [3, -8], [-12, 4], [3, 4]]) put(x, y, z, BZ);
+      }
+      shell(-15, 13, 0, 4, -10, 7, (x) => (((x + 40) % 4 === 0) ? SL : GD));
+      TX0 = -12; TX1 = 4; TZ0 = -8; TZ1 = 5; TY0 = 4; TY1 = 54;
+      FP = [[-15, 13, -10, 7, 4], [-12, 4, -8, 5, 60]];
+      SH = [[-15, 13, -10, 7, 4], [-12, 4, -8, 5, 60]];
+    } else if ("EFGHI".includes(DES)) {
+      const PL = 13, TR = 14, WT = 15;
+      // a glass tower wrapped in a bronze mashrabiya lattice, with a lattice crown
+      const mash = (x0, x1, z0, z1, y0, y1, crown = 5) => {
+        shell(x0, x1, y0, y1, z0, z1, (x, y) => (y < y0 + 4 && y0 === 0 ? (((x + 40) % 4 === 0) ? SL : GD) : (y % 2 === 1 ? SP : GT)), { slab: 14 });
+        const lat = (u, y) => ((u + y) % 6 === 0) || ((u - y + 600) % 6 === 0) || ((y - y0) % 14 === 4);
+        for (let y = Math.max(y0, 4); y < y1 + crown; y++) {
+          for (let x = x0; x < x1; x++) if (lat(x + 40, y)) { put(x, y, z0 - 1, BZ); put(x, y, z1, BZ); }
+          for (let z = z0; z < z1; z++) if (lat(z + 40, y)) { put(x0 - 1, y, z, BZ); put(x1, y, z, BZ); }
+          for (const [x, z] of [[x0 - 1, z0 - 1], [x1, z0 - 1], [x0 - 1, z1], [x1, z1]]) put(x, y, z, BZ);
+        }
+      };
+      // two-level retail block: shopfronts, canopy strip, signage band, finned upper floor
+      const retail = (x0, x1, z0, z1, h = 8, frontZ = z0) => {
+        shell(x0, x1, 0, h, z0, z1, (x, y, z) => { const c = ((z === z0 || z === z1 - 1) ? x : z) + 40;
+          if (y < 3) return c % 5 === 0 ? SL : GD; if (y === 3 || y === 4) return SL; return c % 3 === 0 ? BZ : GD; });
+        for (let x = x0; x < x1; x++) { put(x, 3, frontZ - 1, MT); if ((x + 40) % 10 === 0) for (let y = 0; y < 3; y++) put(x, y, frontZ - 1, MT); }
+        for (let x = x0; x < x1; x++) for (const z of [z0, z1 - 1]) if ((x + 40) % 2 === 0) put(x, h, z, SL);
+        for (let z = z0; z < z1; z++) for (const x of [x0, x1 - 1]) if ((z + 40) % 2 === 0) put(x, h, z, SL);
+      };
+      const palm = (x, z, h = 6, b = 0) => { for (let y = b; y < b + h; y++) put(x, y, z, TR); h += b;
+        for (const [dx, dz] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]]) put(x + dx, h, z + dz, PL);
+        for (const [dx, dz] of [[2, 1], [-2, -1], [1, -2], [-1, 2]]) put(x + dx, h - 1, z + dz, PL); put(x, h + 1, z, PL); };
+      const pool = (x0, x1, z0, z1) => { for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++)
+        put(x, 0, z, (x === x0 || x === x1 - 1 || z === z0 || z === z1 - 1) ? SL : WT); };
+      if (DES === "E") {          // the user's idea: one landmark tower + retail galleria wings + plaza
+        mash(-5, 7, 0, 10, 0, 56);
+        retail(-30, -8, -10, 10); retail(10, 32, -10, 10); retail(-8, 10, 6, 14, 10, 6);
+        for (let x = -2; x < 4; x++) for (let z = -4; z < 0; z++) put(x, 5, z, BZ);              // tower entrance canopy
+        pool(-4, 6, -14, -8); [[-7, -6], [9, -6], [-7, -14], [9, -14]].forEach(([x, z]) => palm(x, z));
+        TX0 = -6; TX1 = 8; TZ0 = -1; TZ1 = 11; TY0 = 0; TY1 = 56;
+        FP = [[-30, -8, -10, 10, 8], [10, 32, -10, 10, 8], [-6, 8, -1, 11, 61]];
+        SH = [[-30, -8, -10, 10, 9], [10, 32, -10, 10, 9], [-6, 8, -1, 11, 61]];
+      } else if (DES === "F") {   // twin lattice towers + sky bridge over a shared retail podium
+        mash(-17, -7, -2, 8, 8, 50); mash(7, 17, -2, 8, 8, 58);
+        shell(-7, 7, 40, 44, 0, 6, (x, y) => (y === 41 || y === 42 ? GT : SL));
+        for (let x = -7; x < 7; x++) for (let y = 40; y < 44; y++) if ((x + y) % 3 === 0) { put(x, y, -1, BZ); put(x, y, 6, BZ); }
+        retail(-24, 24, -10, 12);
+        pool(-5, 5, -16, -12); [[-14, -14], [14, -14], [-8, -16], [8, -16]].forEach(([x, z]) => palm(x, z));
+        TX0 = -18; TX1 = 18; TZ0 = -3; TZ1 = 9; TY0 = 8; TY1 = 58;
+        FP = [[-24, 24, -10, 12, 8], [-18, -6, -3, 9, 55], [6, 18, -3, 9, 63]];
+        SH = [[-24, 24, -10, 12, 9], [-18, -6, -3, 9, 55], [6, 18, -3, 9, 63]];
+      } else if (DES === "G") {   // shaded souq: a giant lattice canopy over retail pavilions, tower behind
+        mash(4, 16, 4, 14, 0, 60);
+        for (let x = -28; x < 22; x++) for (let z = -14; z < 4; z++) {
+          const edge = x === -28 || x === 21 || z === -14 || z === 3;
+          if (edge || ((x + z + 80) % 4 === 0) || ((x - z + 80) % 4 === 0)) put(x, 11, z, BZ); }
+        for (const x of [-28, -16, -4, 8, 21]) for (const z of [-14, 3]) for (let y = 0; y < 11; y++) put(x, y, z, SL);
+        for (let i = 0; i < 6; i++) { const x0 = -26 + i * 8; for (const [z0, z1] of [[-12, -8], [-4, 1]]) shell(x0, x0 + 6, 0, 5, z0, z1, (x, y) => (y < 3 ? GD : (y === 3 ? SL : WD))); }
+        [[-30, -16], [24, -16], [-30, 6], [24, 6]].forEach(([x, z]) => palm(x, z, 7));
+        TX0 = 3; TX1 = 17; TZ0 = 3; TZ1 = 15; TY0 = 0; TY1 = 60;
+        FP = [[-28, 22, -14, 4, 12], [3, 17, 3, 15, 65]];
+        SH = [[-28, 22, -14, 4, 12], [3, 17, 3, 15, 65]];
+      } else if (DES === "H") {                    // terraced: lattice tower cascading into planted terraces over the mall
+        mash(-4, 8, -2, 8, 0, 58);
+        const T = [[10, 30, -10, 10, 6], [10, 24, -10, 8, 12], [10, 18, -10, 6, 18], [-30, -6, -10, 10, 6], [-24, -6, -10, 8, 12]];
+        T.forEach(([x0, x1, z0, z1, h], i) => { shell(x0, x1, h - 6, h, z0, z1, (x, y, z) => (y % 3 === 2 ? SL : GD));
+          for (let x = x0; x < x1; x++) { put(x, h, z0, PL); if ((x + i) % 3 === 0) put(x, h + 1, z0, PL); }
+          for (let z = z0; z < z1; z++) { put(x0 === 10 ? x1 - 1 : x0, h, z, PL); } });
+        for (let x = -1; x < 5; x++) for (let z = -6; z < -2; z++) put(x, 5, z, BZ);
+        pool(-3, 7, -16, -10); [[-8, -14], [12, -14], [-14, -16], [18, -16]].forEach(([x, z]) => palm(x, z));
+        TX0 = -5; TX1 = 9; TZ0 = -3; TZ1 = 9; TY0 = 0; TY1 = 58;
+        FP = [[-30, -6, -10, 10, 12], [10, 30, -10, 10, 18], [-5, 9, -3, 9, 63]];
+        SH = [[-30, -6, -10, 10, 12], [10, 30, -10, 10, 18], [-5, 9, -3, 9, 63]];
+      } else if (DES === "I") {   // 4D refined: terraced mall + mashrabiya tower, grand entrance on King Salman Road
+        mash(-4, 8, -2, 8, 0, 58);
+        const T = [[10, 30, -10, 10, 6], [10, 24, -10, 8, 12], [10, 18, -10, 6, 18], [-30, -6, -10, 10, 6], [-24, -6, -10, 8, 12], [-18, -6, -10, 6, 18]];
+        T.forEach(([x0, x1, z0, z1, h], i) => {
+          shell(x0, x1, h - 6, h, z0, z1, (x, y, z) => { const c = (z === z0 ? x : z) + 40;
+            if (y % 6 === 5) return SL; if (y % 6 === 2) return SL; return c % 3 === 0 ? BZ : GD; });
+          for (let x = x0; x < x1; x++) { put(x, h - 4, z0 - 1, MT); put(x, h, z0, PL); if ((x + i) % 3 === 0) put(x, h + 1, z0, PL); }
+          const ex = x0 === 10 || x0 === -6 ? x1 - 1 : x0; for (let z = z0; z < z1; z++) put(x0 >= 10 ? x1 - 1 : x0, h, z, PL);
+          if (h === 6) for (let x = x0 + 3; x < x1 - 2; x += 7) palm(x, z1 - 4, 4, h);
+        });
+        // grand lobby pavilion + cantilevered lattice canopy on the road side
+        shell(-2, 6, 0, 6, -6, -2, (x, y) => (y === 5 ? SL : ((x + 40) % 2 === 0 ? GD : GT)));
+        for (let x = -5; x < 9; x++) for (let z = -11; z < -5; z++) put(x, 6, z, (x === -5 || x === 8 || z === -11 || ((x + z + 80) % 3 === 0)) ? BZ : SL);
+        for (const x of [-5, 8]) for (let y = 0; y < 6; y++) put(x, y, -11, SL);
+        // road-front landscaping: planters + palms + fountain
+        for (let x = -30; x < 31; x++) if ((x + 40) % 4 !== 0) put(x, 0, -19, PL);
+        [[-27, -16], [-17, -16], [19, -16], [29, -16]].forEach(([x, z]) => palm(x, z, 7));
+        pool(-3, 7, -18, -13);
+        TX0 = -5; TX1 = 9; TZ0 = -3; TZ1 = 9; TY0 = 0; TY1 = 58;
+        FP = [[-30, -6, -10, 10, 18], [10, 30, -10, 10, 18], [-5, 9, -3, 9, 63]];
+        SH = [[-30, -6, -10, 10, 12], [10, 30, -10, 10, 18], [-5, 9, -3, 9, 63]];
+      }
     }
-    for (let x = TX0 - 1; x <= TX1; x++) { put(x, TY1 + 5, TZ0 - 1, SL); put(x, TY1 + 5, TZ1, SL); }   // crown ring
-    for (let z = TZ0 - 1; z <= TZ1; z++) { put(TX0 - 1, TY1 + 5, z, SL); put(TX1, TY1 + 5, z, SL); }
-    shell(-8, -2, TY1, TY1 + 3, -3, 1, () => ST);                                                // rooftop plant
-    // residential wing: balconies with timber louvres
-    shell(3, 12, 6, 26, -5, 5, (x, y, z) => (z === -5 ? ((x % 3 === 0) ? LV : GL) : ((y % 2) ? SP : GL)));
-    for (let y = 7; y < 26; y += 2) for (let x = 3; x < 12; x++) { put(x, y, -6, SL); if (x === 3 || x === 11) put(x, y + 1, -6, SL); }
     const V = [...vox.values()];
 
     // which faces stay visible once everything has landed
@@ -88,14 +242,16 @@
     V.forEach((v, i) => { v.t0 = B0 + (B1 - B0) * (i / V.length); v.dx = (rnd() - .5) * 2.4; v.dz = (rnd() - .5) * 2.4; v.p = 0; v.h = hash(v.x, v.y, v.z); });
     const TOPM = (TY1 + 6) * S * M;
 
-    const FP = [[-14, 12, -8, 8, 6], [TX0 - 1, TX1 + 1, TZ0 - 1, TZ1 + 1, TY1 + 6], [3, 12, -6, 5, 26]];
 
     /* ---------- context: King Fahd Road, neighbours, skyline ---------- */
     const NB = []; // neighbouring buildings (world units)
-    [[-34, -22, 10, 22, 9], [-20, -12, 12, 20, 14], [16, 26, 10, 20, 7], [28, 40, 8, 18, 12], [-48, -36, 6, 16, 5],
+    const KS = DES === "I";
+    (KS ? [[-36, -29, 22, 29, 30, 1], [-47, -40, 26, 33, 34, 1], [-30, -24, 36, 42, 27, 0], [-56, -49, 34, 41, 31, 0], [-44, -39, 10, 15, 46, 0],
+           [-26, -18, 8, 18, 4, 0], [20, 32, 8, 18, 3, 1], [30, 44, 22, 34, 5, 0], [10, 22, 30, 40, 4, 0], [-10, 2, 30, 40, 5, 1], [46, 58, 10, 22, 4, 0]]
+        : [[-34, -22, 10, 22, 9], [-20, -12, 12, 20, 14], [16, 26, 10, 20, 7], [28, 40, 8, 18, 12], [-48, -36, 6, 16, 5],
      [44, 56, 10, 22, 16], [-10, 2, 26, 36, 20], [6, 16, 24, 34, 11], [-30, -18, 30, 42, 26], [20, 32, 28, 40, 18],
-     [-60, -48, 20, 32, 10], [58, 70, 26, 38, 9]].forEach(([x0, x1, z0, z1, h], i) =>
-      NB.push({ x0, x1, z0, z1, h, c: [[222, 214, 200], [206, 200, 192], [230, 224, 212], [190, 186, 180], [214, 202, 184]][i % 5], gl: i % 3 === 1 }));
+     [-60, -48, 20, 32, 10], [58, 70, 26, 38, 9]]).forEach(([x0, x1, z0, z1, h, gl2], i) =>
+      NB.push({ x0, x1, z0, z1, h, c: [[222, 214, 200], [206, 200, 192], [230, 224, 212], [190, 186, 180], [214, 202, 184]][i % 5], gl: gl2 === undefined ? i % 3 === 1 : !!gl2 }));
     const LANES = [[-11, 1, 7], [-13, 1, 6], [-16, 1, 9.5], [-18, 1, 8.5], [-20, 1, 10.5], [-24.5, -1, 9], [-26.5, -1, 10], [-28.5, -1, 8.2]];
     const CARC = [[236, 236, 234], [226, 226, 224], [40, 42, 46], [168, 170, 174], [120, 124, 130], [244, 242, 236], [200, 192, 176], [96, 24, 30], [28, 30, 34], [190, 194, 198]];
     const CARS = []; LANES.forEach(([z, dir, sp], li) => { for (let k = 0; k < 3; k++)
@@ -127,7 +283,7 @@
     let grainPat = null;
 
     /* ---------- camera ---------- */
-    let W = 0, H = 0, DPR = 1;
+    let W = 0, H = 0, DPR = 1, FB = 1;
     const cam = { yaw: 0, pitch: .5, dist: 40, tx: -1, ty: 9, tz: 0, f: 1 };
     let cy, sy, cp, sp;
     const setCam = () => { cy = Math.cos(cam.yaw); sy = Math.sin(cam.yaw); cp = Math.cos(cam.pitch); sp = Math.sin(cam.pitch); };
@@ -146,7 +302,7 @@
       cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
       g.setTransform(DPR, 0, 0, DPR, 0, 0);
       cache.width = cv.width; cache.height = cv.height; cacheOK = false;
-      cam.f = Math.min(W, H * .8) * 1.6;
+      FB = Math.min(W, H * .8) * 1.6; cam.f = FB;
       grainPat = g.createPattern(grain, "repeat");
     };
 
@@ -164,7 +320,7 @@
     const HAZE = [226, 220, 208], SKYTOP = [92, 140, 190], SKYMID = [150, 184, 214];
     const fogK = d => clamp((d - 40) / 260) * .7;
     const MATC = { [GL]: [72, 100, 120], [GD]: [42, 52, 60], [SP]: [88, 94, 100], [ST]: [220, 208, 188],
-      [SL]: [236, 228, 214], [MT]: [64, 64, 66], [LV]: [150, 104, 66], [RF]: [176, 168, 156] };
+      [SL]: [236, 228, 214], [MT]: [64, 64, 66], [LV]: [150, 104, 66], [RF]: [176, 168, 156], [BZ]: [150, 108, 70], [GT]: [62, 96, 104], [SA]: [214, 186, 148], [WD]: [128, 86, 54], 13: [92, 116, 64], 14: [116, 92, 66], 15: [118, 168, 186] };
 
     // a box as depth-sorted faces (neighbours, cars)
     const boxFaces = (out, x0, x1, y0, y1, z0, z1, col, E, extra) => {
@@ -184,8 +340,9 @@
       const yW = -.95 + tc * .1, yR = .3 + (tc - 9) * .02;
       cam.yaw = mix(yW, yR, real);
       cam.pitch = mix(.4 + .07 * Math.sin(tc * .45), .085, real);
-      cam.dist = mix(66 - 10 * eIO(seg(tc, 0, 7)), 58 - (tc - 9) * .5, real);
-      cam.ty = mix(13.5, 12.5, real); cam.tx = mix(-1, 1.5, real);
+      cam.dist = mix((KS ? 92 : 66) - 12 * eIO(seg(tc, 0, 7)), (window.__hjfDist || (KS ? 50 : 58)) - (tc - 9) * .5, real);
+      cam.ty = mix(13.5, 12.5, real); cam.tx = mix(-1, KS ? 8.5 : 1.5, real);
+      cam.f = KS ? FB * mix(1, .64, real) : FB;
       setCam();
       const E = camPos();
       const hor = H * .56 - cam.f * Math.tan(cam.pitch);
@@ -219,17 +376,74 @@
         g.save(); g.beginPath(); g.rect(0, 0, W, hor + 1); g.clip();
         CITY.forEach(([u, w, h2, r]) => { const bx = u * W * 1.4 - W * .2 - (cam.yaw - .3) * W * .6, bw = w * W * 3, bh = h2 * H * 1.6;
           g.fillStyle = rgb(mixv([160, 156, 150], HAZE, .55 + r * .25)); g.fillRect(bx, hor - bh, bw, bh + 1); });
-        const far = (ang, R, hM) => { const a = yR + ang, X = cam.tx + Math.sin(a) * R, Z = cam.tz + Math.cos(a) * R;
+        const far = (ang, R, hM) => { const a = (KS ? .3 : yR) + ang, X = cam.tx + Math.sin(a) * R, Z = cam.tz + Math.cos(a) * R;
           const b = P(X, 0, Z), tp = P(X, hM / M, Z); return b[2] > 1 ? { x: b[0], y: hor, h: b[1] - tp[1] } : null; };
         const tone = (k, warm) => rgb(mixv(warm ? [120, 118, 110] : [92, 104, 116], HAZE, k));
+        if (KS) {
+          // real Riyadh landmarks seen from King Salman Road looking south-south-west (angles: + = west)
+          const hz2 = (c, k) => rgb(mixv(c, HAZE, k));
+          const prism = (x, y, h, w, top, cL, cR, k) => {    // two visible faces, lit left / shaded right; top(x) gives roof height 0..1
+            const xl = x - w / 2, xm = x + w * .1, xr = x + w / 2;
+            g.fillStyle = hz2(cL, k); g.beginPath(); g.moveTo(xl, y); g.lineTo(xl, y - h * top(0)); g.lineTo(xm, y - h * top(.6)); g.lineTo(xm, y); g.fill();
+            g.fillStyle = hz2(cR, k); g.beginPath(); g.moveTo(xm, y); g.lineTo(xm, y - h * top(.6)); g.lineTo(xr, y - h * top(1)); g.lineTo(xr, y); g.fill(); };
+          const bands = (x, y, h, w, n, k) => { g.fillStyle = `rgba(40,50,60,${.12 * (1 - k)})`; for (let i = 1; i < n; i++) g.fillRect(x - w / 2, y - h * i / n, w, Math.max(.4, h / n * .25)); };
+          // Al Faisaliah (S 14 km): tapering lattice pyramid, golden globe, spire
+          let L = far(-.39, 420, 267);
+          if (L) { const { x, y, h } = L, w = h * .26, k = .36;
+            g.fillStyle = hz2([150, 152, 152], k); g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x - w * .05, y - h * .86); g.lineTo(x, y - h * .86); g.lineTo(x, y); g.fill();
+            g.fillStyle = hz2([108, 112, 116], k); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - h * .86); g.lineTo(x + w * .05, y - h * .86); g.lineTo(x + w / 2, y); g.fill();
+            g.fillStyle = hz2([160, 176, 190], k); g.beginPath(); g.moveTo(x - w * .17, y); g.lineTo(x - w * .03, y - h * .5); g.lineTo(x + w * .03, y - h * .5); g.lineTo(x + w * .17, y); g.fill();
+            g.fillStyle = "rgba(70,72,76,.45)"; for (let i = 1; i < 10; i++) { const yy = y - h * .86 * i / 10, ww = w * (1 - i / 10 * .9) * .5; g.fillRect(x - ww, yy, ww * 2, Math.max(.6, h * .006)); }
+            g.fillStyle = hz2([222, 176, 92], .16); g.beginPath(); g.arc(x, y - h * .73, w * .12, 0, 6.3); g.fill();
+            g.fillStyle = "rgba(255,244,210,.55)"; g.beginPath(); g.arc(x - w * .04, y - h * .745, w * .045, 0, 6.3); g.fill();
+            g.strokeStyle = hz2([120, 120, 120], k); g.lineWidth = Math.max(.8, w * .02); g.beginPath(); g.moveTo(x, y - h * .86); g.lineTo(x, y - h); g.stroke(); }
+          // Kingdom Centre (S 11.5 km): wide face with the parabolic opening, sky bridge across the very top
+          L = far(-.33, 360, 302);
+          if (L) { const { x, y, h } = L, w = h * .27, k = .3;
+            const half = (sg, col) => { g.fillStyle = hz2(col, k); g.beginPath();
+              g.moveTo(x, y); g.lineTo(x + sg * w * .5, y);
+              g.lineTo(x + sg * w * .47, y - h * .56);
+              g.bezierCurveTo(x + sg * w * .45, y - h * .78, x + sg * w * .4, y - h * .92, x + sg * w * .33, y - h);   // outer edge curving in
+              g.lineTo(x + sg * w * .25, y - h);                                                                       // thin arm top
+              g.bezierCurveTo(x + sg * w * .2, y - h * .86, x + sg * w * .1, y - h * .67, x, y - h * .655);               // inner parabola down to the void bottom
+              g.closePath(); g.fill(); };
+            half(-1, [168, 178, 188]); half(1, [110, 120, 132]);
+            g.fillStyle = hz2([96, 102, 110], k - .05);                                                                 // sky bridge
+            g.beginPath(); g.moveTo(x - w * .27, y - h * .965); g.quadraticCurveTo(x, y - h * .995, x + w * .27, y - h * .965);
+            g.lineTo(x + w * .27, y - h * .945); g.quadraticCurveTo(x, y - h * .975, x - w * .27, y - h * .945); g.fill();
+            g.fillStyle = "rgba(255,255,255,.14)"; g.fillRect(x - w * .3, y - h * .6, w * .05, h * .58);
+            bands(x, y - h * .01, h * .6, w * .94, 30, k); }
+          // KAFD (S 6 km): a dense cluster around the PIF Tower
+          const kafd = [[.01, 300, 210, .2, [.92, .8], [150, 170, 180]], [.13, 310, 180, .22, [1, .9], [176, 172, 160]], [.155, 300, 240, .17, [.85, 1], [130, 156, 170]],
+            [-.035, 290, 170, .24, [1, 1], [180, 176, 166]], [.09, 330, 230, .19, [1, .82], [146, 164, 176]], [.035, 310, 300, .18, [1, .88], [140, 162, 178]],
+            [.185, 330, 160, .22, [.9, 1], [170, 166, 156]], [-.06, 320, 150, .26, [1, .92], [150, 168, 178]]];
+          kafd.forEach(([a, R, hM, wr, tp, col]) => { const q = far(a, R, hM); if (!q) return; const { x, y, h } = q, w = h * wr;
+            prism(x, y, h, w, u => mix(tp[0], tp[1], u), col, mul(col, .7), .3); bands(x, y, h * .9, w, 34, .3);
+            g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(x - w * .35, y - h * .85 * Math.min(tp[0], tp[1]), w * .04, h * .8 * Math.min(tp[0], tp[1])); });
+          L = far(.06, 290, 385);                                   // PIF Tower: tallest, faceted glass, steep sloped crown
+          if (L) { const { x, y, h } = L, w = h * .19, k = .26;
+            prism(x, y, h, w, u => (u < .6 ? mix(1, .86, u / .6) : mix(.86, .74, (u - .6) / .4)), [176, 196, 210], [100, 120, 138], k);
+            g.strokeStyle = "rgba(60,74,88,.35)"; g.lineWidth = Math.max(.5, w * .012);                                    // diagonal diamond facets
+            for (let i = 0; i < 14; i++) { const yy = y - h * .8 * i / 14; g.beginPath(); g.moveTo(x - w / 2, yy); g.lineTo(x + w * .1, yy - h * .06); g.lineTo(x + w / 2, yy); g.stroke(); }
+            g.fillStyle = "rgba(255,255,255,.2)"; g.fillRect(x - w * .4, y - h * .9, w * .05, h * .88); }
+          // Burj Rafal (SSW 2.5 km): slim tower, stepped crown, spire
+          L = far(.4, 250, 308);
+          if (L) { const { x, y, h } = L, w = h * .14, k = .2;
+            prism(x, y, h * .82, w, () => 1, [200, 204, 208], [132, 140, 150], k);
+            prism(x, y - h * .82, h * .06, w * .78, () => 1, [194, 198, 202], [126, 132, 140], k);
+            prism(x, y - h * .88, h * .05, w * .52, () => 1, [188, 192, 196], [120, 126, 134], k);
+            g.strokeStyle = hz2([150, 150, 150], k); g.lineWidth = Math.max(.8, w * .05); g.beginPath(); g.moveTo(x, y - h * .93); g.lineTo(x, y - h); g.stroke();
+            g.fillStyle = "rgba(255,255,255,.18)"; for (let i = 0; i < 5; i++) g.fillRect(x - w * .45 + i * w * .11, y - h * .8, Math.max(.5, w * .015), h * .78);
+            bands(x, y, h * .82, w, 50, k); }
+        } else {
         // Al Faisaliah: four tapering legs to a point, golden sphere, spire
-        let L = far(-.17, 520, 267);
+        let L = KS ? far(-.235, 1700, 267) : far(-.17, 520, 267);
         if (L) { const { x, y, h } = L, w = h * .24;
           g.fillStyle = tone(.5); g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x - w * .06, y - h * .9); g.lineTo(x, y - h); g.lineTo(x + w * .06, y - h * .9); g.lineTo(x + w / 2, y); g.fill();
           g.fillStyle = rgb(mixv([206, 168, 104], HAZE, .32)); g.beginPath(); g.arc(x, y - h * .73, w * .13, 0, 6.3); g.fill();
           g.fillStyle = tone(.62); for (let k = 1; k < 7; k++) { const yy = y - h * k * .1, ww = w * (1 - k * .1) * .5; g.fillRect(x - ww, yy, ww * 2, Math.max(.6, h * .006)); } }
         // Kingdom Centre: tapered body, parabolic void at the top, sky bridge
-        L = far(.14, 640, 302);
+        L = KS ? far(-.19, 1400, 302) : far(.14, 640, 302);
         if (L) { const { x, y, h } = L, w = h * .25;
           g.fillStyle = tone(.48); g.beginPath(); g.moveTo(x - w / 2, y);
           g.bezierCurveTo(x - w * .5, y - h * .55, x - w * .42, y - h * .85, x - w * .27, y - h);
@@ -238,9 +452,10 @@
           g.fillStyle = tone(.42); g.fillRect(x - w * .23, y - h * .855, w * .46, Math.max(1, h * .02));
           g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(x - w * .1, y - h * .64, w * .08, h * .62); }
         // KAFD cluster: faceted towers with sloped crowns
-        [[.24, 900, 385, .2, .14], [.27, 940, 300, .16, .1], [.205, 980, 260, .17, .2], [.3, 1000, 220, .15, .05], [-.27, 880, 180, .18, .12], [.33, 960, 190, .14, .16]].forEach(([a, R, hM, wr, sl]) => {
+        (KS ? [[.08, 820, 385, .2, .14], [.11, 860, 300, .16, .1], [.05, 900, 260, .17, .2], [.135, 880, 240, .15, .05], [.02, 860, 200, .18, .12], [.16, 900, 190, .14, .16]] : [[.24, 900, 385, .2, .14], [.27, 940, 300, .16, .1], [.205, 980, 260, .17, .2], [.3, 1000, 220, .15, .05], [-.27, 880, 180, .18, .12], [.33, 960, 190, .14, .16]]).forEach(([a, R, hM, wr, sl]) => {
           const q = far(a, R, hM); if (!q) return; const { x, y, h } = q, w = h * wr;
           g.fillStyle = tone(.58); g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x - w / 2, y - h * (1 - sl)); g.lineTo(x + w * .2, y - h); g.lineTo(x + w / 2, y - h * (1 - sl * .4)); g.lineTo(x + w / 2, y); g.fill(); });
+        }
         g.restore();
         const hz = g.createLinearGradient(0, hor - H * .08, 0, hor + H * .06);
         hz.addColorStop(0, "rgba(226,220,208,0)"); hz.addColorStop(.6, "rgba(226,220,208,.55)"); hz.addColorStop(1, "rgba(226,220,208,0)");
@@ -308,7 +523,7 @@
           for (const p of pts) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
           for (const p of pts.slice().reverse()) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
           path(lo.slice(0, -1).concat(up.slice(0, -1))); g.fill(); };
-        shadowOf(-14 * S, 12 * S, -8 * S, 8 * S, 6 * S); shadowOf(TX0 * S, TX1 * S, TZ0 * S, TZ1 * S, (TY1 + 6) * S); shadowOf(3 * S, 12 * S, -5 * S, 5 * S, 26 * S);
+        SH.forEach(([a, b, c, d, h]) => shadowOf(a * S, b * S, c * S, d * S, h * S));
         NB.forEach(b => shadowOf(b.x0, b.x1, b.z0, b.z1, b.h));
         g.restore(); g.globalAlpha = 1;
       }
@@ -351,19 +566,19 @@
           const v = f.v, s = WSH[f.i], n = DIRS[f.i];
           const wc = [36 + 150 * s, 10 + 70 * s, 16 + 50 * s];
           if (real <= 0) { poly(f.pts, rgb(wc, .96 * f.alpha), cu((.5 + .5 * f.fresh) * f.alpha), .55 + f.fresh * .7); continue; }
-          let m = v.m; if (n[1] !== 0 && (m === GL || m === SP || m === GD || m === LV)) m = RF;
+          let m = v.m; if (n[1] !== 0 && (m === GL || m === SP || m === GD || m === LV || m === GT)) m = RF;
           const lit = .44 + .56 * lam(n) + (n[1] > 0 ? .08 : 0);
           let c = mul(MATC[m], lit);
-          if (m === GL || m === GD) {          // glass: sky reflection rises with height, a soft sheen sweeps across
+          if (m === GL || m === GD || m === GT) {          // glass: sky reflection rises with height, a soft sheen sweeps across
             const hgt = clamp(v.y / (TY1 + 4)), sx = (f.pts[0][0] + f.pts[2][0]) / 2;
             const sheen = Math.exp(-Math.pow((sx - W * (.35 + .1 * Math.sin(t * .3))) / (W * .12), 2)) * .25;
             c = mixv(c, mixv([150, 176, 200], [206, 222, 236], hgt), clamp(.18 + hgt * .45 + sheen + (v.h - .5) * .12));
-            if (m === GD) c = mul(c, .7);
+            if (m === GD) c = mul(c, .7); if (m === GT) c = mixv(c, [70, 120, 126], .35);
           } else c = mul(c, .97 + v.h * .06);
           c = mixv(c, HAZE, fogK(f.d));
           const out = rgb(mixv(wc, c, real), f.alpha);
-          const edge = (m === GL || m === GD) ? rgb(mixv(CU, mul(c, .62), real), (.5 + .5 * real) * f.alpha) : (wire > .02 ? cu(.5 * wire * f.alpha) : out);
-          poly(f.pts, out, edge, (m === GL || m === GD) ? .45 : .6);
+          const edge = (m === GL || m === GD || m === GT) ? rgb(mixv(CU, mul(c, .62), real), (.5 + .5 * real) * f.alpha) : (wire > .02 ? cu(.5 * wire * f.alpha) : out);
+          poly(f.pts, out, edge, (m === GL || m === GD || m === GT) ? .45 : .6);
         } else if (f.k === 2) {                  // neighbours & cars
           const n = f.n, lit = .45 + .55 * lam(n) + (n[1] > 0 ? .06 : 0);
           let c = mul(f.col, lit);
@@ -409,7 +624,7 @@
         g.lineWidth = 1; g.strokeStyle = cu(.6 * hud);
         [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]].forEach(([x, y, a, b]) => {
           g.beginPath(); g.moveTo(x, y + r * b); g.lineTo(x, y); g.lineTo(x + r * a, y); g.stroke(); });
-        mono("HJF · KING FAHD RD", m + 4, m + 20, .75 * hud, 9);
+        mono(KS ? "HJF · KING SALMAN RD" : "HJF · KING FAHD RD", m + 4, m + 20, .75 * hud, 9);
         mono("24.71N 46.67E", W - m - 4, m + 20, .45 * hud, 9, "right");
         mono("BLOCKS " + String(placed).padStart(4, "0") + " / " + V.length, m + 4, H - m - 8, .7 * hud, 9);
         mono("ELEV +" + (top * S * M).toFixed(1).padStart(5, "0") + "m", W - m - 4, H - m - 8, .7 * hud, 9, "right");
@@ -443,15 +658,15 @@
     resize();
     window.__hjfRender = render; window.__hjfBlocks = V.length; // for screenshots
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const still = () => render(12.5);
+    const still = () => { render(12.5); vid.removeAttribute("src"); vid.load(); vid.style.opacity = 1; };
     if (reduce) { still(); addEventListener("resize", () => { resize(); still(); }); }
     else {
       let start = null, raf = null, elapsed = 0;
       const loop = now => { if (start === null) start = now - elapsed * 1000;
-        elapsed = ((now - start) / 1000) % T; render(elapsed); raf = requestAnimationFrame(loop); };
+        elapsed = ((now - start) / 1000) % T; render(elapsed); vSync(elapsed); raf = requestAnimationFrame(loop); };
       new IntersectionObserver(es => es.forEach(e => {
         if (e.isIntersecting && !raf) { start = null; raf = requestAnimationFrame(loop); }
-        if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = null; }
+        if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = null; vid.pause(); }
       }), { threshold: .1 }).observe(host);
       addEventListener("resize", () => { resize(); render(elapsed); });
       render(0);
