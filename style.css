@@ -319,3 +319,4 @@ html,body{overflow-x:clip}
   .jline::before{right:16px;top:0}
 }
 .jline i,.jline li:last-child i{box-shadow:none}
+.jline i,.jline li:last-child i{box-shadow:0 0 0 10px var(--burgundy-deep)}
