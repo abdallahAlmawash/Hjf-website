@@ -341,3 +341,10 @@ section.s:not(.green),section.s.alt{background:transparent}
 .flogo img:last-child{height:19px}
 .brand .mk{height:106px}
 @media (max-width:760px){.brand .mk{height:76px}}
+/* fixed, always-solid header on every page */
+.top,.home .top{position:sticky;top:0;z-index:40;background:var(--burgundy-deep);box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.home .top{position:fixed;inset:0 0 auto}
+.home .hero2 .wrap{padding-top:170px}
+.top .wrap{padding-block:8px}
+@media (max-width:760px){.home .hero2 .wrap{padding-top:130px}}
+html{scroll-padding-top:130px}

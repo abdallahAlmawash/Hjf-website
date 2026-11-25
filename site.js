@@ -9,9 +9,7 @@
   }
 
   // header turns solid after scrolling past the hero
-  const top = document.getElementById("top");
-  const onScroll = () => top && top.classList.toggle("solid", window.scrollY > 40);
-  onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+  // header is always solid and fixed (see style.css)
 
   // reveal on scroll (staggered within each group)
   const els = document.querySelectorAll(".rv");
