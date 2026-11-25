@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://h-j-f.com/sitemap.xml
