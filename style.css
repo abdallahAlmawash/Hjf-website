@@ -310,3 +310,12 @@ html,body{overflow-x:clip}
 @media (max-width:900px){.jline i{right:-36px;top:0}.jline li:last-child i{right:-40px;top:-4px;margin:0}.jline::before{right:7px}}
 .jline li:last-child i{width:30px;height:32px;margin-top:0;margin-bottom:22px;filter:none}
 @media (max-width:900px){.jline li:last-child i{right:-36px;top:0;margin:0}}
+/* align timeline line exactly through the mark's corners */
+.jline::before{top:15px}
+@media (max-width:900px){.jline::before{right:10px;top:0}}
+@media (max-width:900px){
+  .jline{padding-right:44px}
+  .jline i,.jline li:last-child i{right:-44px;top:0;margin:0}
+  .jline::before{right:16px;top:0}
+}
+.jline i,.jline li:last-child i{box-shadow:none}
