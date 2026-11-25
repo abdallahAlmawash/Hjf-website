@@ -320,3 +320,11 @@ html,body{overflow-x:clip}
 }
 .jline i,.jline li:last-child i{box-shadow:none}
 .jline i,.jline li:last-child i{box-shadow:0 0 0 10px var(--burgundy-deep)}
+
+/* ===== brand beige textured paper (from identity posts) ===== */
+:root{--cream:#EDE0CE;--paper:rgba(250,244,234,.55);--line:#DCCBB4}
+body,section.s,section.s.alt,.atext,.pagehead+section{background-color:#EDE0CE}
+body{background-image:url(img/texture-beige.jpg);background-size:1070px auto;background-repeat:repeat}
+section.s:not(.green),section.s.alt{background:transparent}
+.doc .box,.values li,.cc,.steps li,.reginfo,.lic figure,.crcard,.hours,.proj{background:rgba(250,244,234,.55)}
+.lic button,.crcard button{background:rgba(200,180,150,.25)}
